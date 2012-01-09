@@ -1,0 +1,146 @@
+#!/bin/bash
+
+###########################################################################
+#                                                                         #
+#  digilentusb -- Hotplug Script for Digilent USB Devices                 #
+#                                                                         #
+###########################################################################
+#  Author: MTA                                                            #
+#  Copyright 2011 Digilent Inc.                                           #
+###########################################################################
+#  File Description:                                                      #
+#                                                                         #
+#  This is a bash shell script that gets executed by hotplug when it      #
+#  detects a hotplug event for a Digilent device. This script is used to  #
+#  set the permissions for devices when they are added to the system. It  #
+#  is also used to run an external application that will detach any       #
+#  kernel driver that is attached to a Digilent device that has an FTDI   #
+#  chip that's using FTDI's default vendor ID and product ID.             #
+#                                                                         #
+###########################################################################
+#  Revision History:                                                      #
+#                                                                         #
+#  03/07/2011(MTA): created                                               #
+#                                                                         #
+###########################################################################
+
+szFTDTCH='/usr/local/sbin/dftdrvdtch'
+
+if [ "${ACTION}" = "add" ]
+then
+	# The "DEVICE" variable is set by hotplug before this script is called.
+	# This variable contains the path to the entry in the file system that
+	# is used when the device is accessed.Change the permissions of the
+	# device so that all users can access it.
+	chmod 666 "${DEVICE}"
+	if (( $? )); then exit 1; fi
+	
+	# The "PRODUCT" variable is set by hotplug before this script is called
+	# and is expected to be formatted as "vendorID/productID/bcdUSB". We
+	# need to extract the vendorID field.
+	vid=$(echo ${PRODUCT} | cut -f 1 -d "/")
+	
+	# If this isn't an FTDI based device then we are finished.
+	if [ "${vid}" != "403" ]; then exit 0; fi
+	
+	# If we get this far then the device has an FTDI chip on it and we
+	# have to perform a bunch of additional checks to ensure that it's
+	# actually a Digilent device before we call an external application
+	# that detaches any Kernel driver that might be attached to the
+	# device's interfaces.
+	
+	# Parse the device's bus number and address from the "DEVICE" variable.
+	bus=$(echo ${DEVICE} | sed 's|/proc/bus/usb/||' | cut -f 1 -d "/" | sed 's/0*//')
+	addr=$(echo ${DEVICE} | sed 's|/proc/bus/usb/||' | cut -f 2 -d "/"| sed 's/0*//')
+	
+	if [ ! -f "/proc/bus/usb/devices" ]; then exit 1; fi
+	
+	# The file "/proc/bus/usb/devices" contains entries corresponding to
+	# USB devices attached to the system. This file should contain the
+	# "Manufacturer" string descriptor for all attached devices that
+	# support that descriptor. We need to search this file for an entry
+	# that has a matching bus number and device address, and has the
+	# "Digilent" manufacturer string.
+	
+	let fBusMatched=0
+	let fAddrMatched=0
+	let fIsDigilentDev=0
+
+	while read szLine
+	do
+		if [[ "${szLine}" == T:* ]]
+		then
+			# Found the begining of a new device entry.
+	
+			echo "${szLine}"
+		
+			# Remove the "T:" and remove any whitespace that follows a "=",
+			# then create an array that contains just "key=value" pairs.
+			rgszTemp=($(echo ${szLine} | sed 's/T://' | sed 's/=[ ]*/=/g'))
+		
+			# Go through the array and check to see if the bus number and
+			# device address of this entry match the one that we are looking
+			# for.
+			let fBusMatched=0
+			let fAddrMatched=0
+			for (( i=0; i < ${#rgszTemp[*]}; i++ ))
+			do
+				echo "    ${rgszTemp[${i}]}"
+			
+				if [[ "${rgszTemp[${i}]}" == Bus=* ]]
+				then
+					if (( ${rgszTemp[${i}]//Bus=/} == $bus ))
+					then
+						let fBusMatched=1
+					fi
+				fi
+			
+				if [[ "${rgszTemp[${i}]}" == Dev#=* ]]
+				then
+					if (( ${rgszTemp[${i}]//Dev#=/} == $addr ))
+					then
+						let fAddrMatched=1
+					fi
+				fi
+			
+				if (( $fBusMatched && $fAddrMatched ))
+				then
+					break
+				fi
+			done
+		elif [[ "${szLine}" == S:* ]]
+		then
+			# Found an entry for a string descriptor.
+		
+			# If the bus address and device address of this entry doesn't match
+			# then we should continue to the next line.
+			if (( ! $fBusMatched || ! $fAddrMatched ))
+			then
+				continue
+			fi
+		
+			# This device entry corresponds to the entry that the device that
+			# we are looking for.
+			szTemp=$(echo ${szLine} | sed 's/S:[ ]*//')
+			if [[ "${szTemp}" == Manufacturer=* ]]
+			then
+				if [ "${szTemp//Manufacturer=/}" = "Digilent" ]
+				then
+					let fIsDigilentDev=1
+					break
+				fi
+			fi
+		elif [ -z "${szLine}" ]
+		then
+			# We've reached the end of the current device entry.
+			let fBusMatched=0
+			let fAddrMatched=0
+		fi
+	done < "/proc/bus/usb/devices"
+	
+	if (( $fIsDigilentDev ))
+	then
+		"${szFTDTCH}" "${bus}" "${addr}"
+	fi
+fi
+

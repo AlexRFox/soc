@@ -1,0 +1,144 @@
+Description
+===========
+
+The Adept Runtime uses FTDI's libftd2xx driver to communicate with some of
+Digilent's USB devices. This directory contains that library and bash shell
+script designed to aid in its installation. At the time of writing version
+1.0.4 was the latest version of the library. A newer version of the library
+may be available at http://www.ftdichip.com/Drivers/D2XX.htm
+
+
+Supported Operating Systems
+===========================
+
+According to FTDI's documentation libftd2xx was built and tested using
+Mandrake 9.2. Digilent has confirmed that the library works with the
+following distributions:
+
+CentOS 4 / Red Hat Enterprise Linux 4
+CentOS 5 / Red Hat Enterprise Linux 5
+openSUSE 11 / SUSE Linux Enterprise 11
+Ubuntu 8.04
+Ubuntu 9.10
+Ubuntu 10.04
+
+Please note that limited testing has been performed for each of these
+distributions. However, due to variances in system configurations Digilent
+can provide no guarantee that libftd2xx will work on your system.
+
+
+Dependencies
+============
+
+None.
+
+
+Installation
+============
+
+Before installing FTDI's libftd2xx driver you must agree to Digilent's End
+User License Agreement, which can be found in EULA_DIGILENT. Additionally,
+you must agree to FTDI's End User License Agreement, which can be found
+in EULA_FTDI.
+
+Manual Installation:
+	The FTDI drivers consist of a single shared library. For a 32-bit
+	release libraries can be found in the "lib" directory. For a 64-bit
+	release libraries can be found in the "lib64" directory. The contents
+	of the applicable directory should be copied to a location that is
+	appropriate for the distribution that the FTDI drivers are being
+	installed on.
+	
+	If you are running a 32-bit distribution then locations that are likely
+	to be suitable are "/usr/local/lib" and "/usr/lib". Suitable
+	locations for a 64-bit distribution are likely to be "/usr/local/lib64"
+	and "/usr/lib64".
+	
+	Let's assume that you are running a 32-bit distribution and want to
+	install the shared library in "/usr/local/lib". The
+	following commands, when executed with superuser privileges, will copy
+	the library to that location and set the appropriate permissions.
+	
+	mkdir -p /usr/local/lib
+	cp -f lib/libftd2xx.so.1.0.4 /usr/local/lib
+	chmod 755 /usr/local/lib/libftd2xx.so.1.0.4
+	
+	Shared libraries typically include a version number in their filename
+	which includes the major, minor, and subversion of the library.
+	Applications that use shared libraries rarely link against a specific
+	version of a library. Instead they link against a major version of a
+	library or they don't include any version information in the link. 
+	Symbolic links that don't include any version information or only
+	include the major version number must be created in order for the
+	dynamic loader to be able to find the correct library to load for these
+	applications. Let's assume that you are running a 32-bit distribution
+	and that you installed libftd2xx in "/usr/local/lib". The following
+	commands, when executed with superuser privileges, will create the
+	symbolic links required by the dynamic loader.
+	
+	cd /usr/local/lib
+	ln -fs libftd2xx.so.1.0.4 libftd2xx.so
+	ln -fs libftd2xx.so.1.0.4 libftd2xx.so.1
+	
+	The dynamic loader only searches certain directories for shared
+	libraries. Which directories are searched depends on a system's
+	configuration. When the dynamic loader builds its cache it determines
+	which directories to search by reading pathnames from configuration
+	files in "/etc/ld.so.conf.d". A configuration file containing the path
+	to the directory in which libftd2xx was installed should be created in
+	"/etc/ld.so.conf.d" to ensure that the dynamic loader is able to find
+	the library. Let's assume that you are running a 32-bit distribution
+	and that you installed libftd2xx in "/usr/local/lib". The following
+	commands, when executed with superuser privileges, will create a
+	configuration file containing the appropriate path.
+	
+	echo "# Path to libftd2xx" > "/etc/ld.so.conf.d/ftdi-drivers.conf"
+	echo "/usr/local/lib" >> "/etc/ld.so.conf.d/ftdi-drivers.conf"
+	
+	Once the dynamic loader configuration file has been created it is
+	necessary to have the dynamic loader update its cache. The following
+	command, when executed with superuser privileges, can be used to force
+	the cache to be updated.
+	
+	/sbin/ldconfig
+
+Installation via Install Script:
+	A bash shell script (install.sh) has been provided to assist in
+	installation. On 32-bit systems the script will attempt to install any
+	shared libraries found in "lib" under "/usr/local/lib" or "/usr/lib".
+	On 64-bit systems the script will attempt to install any shared
+	libraries found in "lib64" under "/usr/local/lib64", "/usr/lib64", 
+	"usr/local/lib", or "/usr/lib". If one or more of these directories is
+	available then you will be asked to confirm the installation path. If
+	you do not wish to use the default installation path then enter a
+	different one. If no default installation path can be determined then
+	you must enter one when prompted.
+	
+	Before the script installs any library it checks to see if an existing
+	version of that library is installed. If an existing version is found
+	then a check is done to see if the version being installed is newer
+	than the currently installed version. If the version being installed is
+	newer than the currently installed version then it's installed in the
+	same directory as the currently installed version and all symbolic
+	links are updated as necessary. If no existing version is found then
+	installation proceeds as stated above.
+	
+	The script automatically creates any necessary symbolic links and
+	creates a text file in "/etc/ld.so.conf.d" that contains path to the
+	directory in which the shared libraries were installed. After
+	installation is complete the script executes ldconfig to update the
+	dynamic loader cache.
+
+
+Known Issues
+============
+
+None.
+
+
+Author
+======
+
+Digilent, Inc.
+support@digilentinc.com
+

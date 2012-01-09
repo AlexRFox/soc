@@ -1,0 +1,43 @@
+
+###########################################################################
+#                                                                         #
+#  SConscript -- Get Info Demo SCONS Build Script                         #
+#                                                                         #
+###########################################################################
+#  Author: MTA                                                            #
+#  Copyright 2010 Digilent Inc.                                           #
+###########################################################################
+#  File Description:                                                      #
+#                                                                         #
+#  This is a SCONS build script for the Get Info Demo. It is not meant    #
+#  to be executed directly. It should be executed by a parent script      #
+#  (../SConstruct) that provides the appropriate variables required to    #
+#  build the application. The parent script should setup the environment  #
+#  with the appropriate CPPDEFINES and CCFLAGS.                           #
+#                                                                         #
+###########################################################################
+#  Revision History:                                                      #
+#                                                                         #
+#  08/06/2010(MTA): created                                               #
+#                                                                         #
+###########################################################################
+
+# Import variables exported by the calling SConstruct.
+Import('env', 'destdir', 'libpath')
+
+
+# Define a list of libraries that the application must link against.
+libs = ['dmgr']
+
+
+# Create a list of source files to pass to the compiler.
+sources = [Glob('*.cpp')]
+
+# Clone (copy) the global environment and make modifications to the copy
+# before performing the build.
+envBuild = env.Clone()
+
+
+# Create an executable and place it in the correct output folder.
+envBuild.Install(destdir, envBuild.Program('GetInfoDemo', sources, LIBS=libs, LIBPATH=libpath))
+

@@ -1,0 +1,171 @@
+Description
+===========
+
+The Adept Runtime is made up of a number of shared libraries that provide
+application programming interfaces (APIs) used to access the various
+features of the system. The API functions are divided into sets of
+related functions called Application Protocol Types (APTs). All of the
+functions related to a specifc APT are contained in a single library for
+that APT. Please see the documentation distributed with the Adept SDK for a
+description of the APTs provided by the Adept System.
+
+This directory contains several example projects that demonstrate how to
+construct custom applications that use the APIs provided by the Adept
+System to communicate with Digilent's devices. The example proejcts are
+organized based on APT. Each project consists of one or more source
+files, a SCONS build script, a makefile, and a text file that provides a
+brief description of the project and required hardware.
+
+
+Dependencies
+============
+
+The example projects in this directory require the Adept Runtime and the
+Adept SDK to be installed on your system. The latest versions of the
+Adept Runtime and the Adept SDK may be obtained from Digilent's website:
+
+http://www.digilentinc.com
+
+The SCONS build scripts distributed with the example projects require 
+SCONS to be installed on your system. If your system does not provide a
+package for SCONS you can download the source from http://www.scons.org/
+and build it. Please note that it is only necessary to have SCONS
+installed on your system if you wish to build the example projects using
+the included SCONS scripts.
+
+
+Usage
+=====
+
+Before building or using any of the example projects you must agree to the
+End User License Agreement, which can be found in the file "EULA", which
+was distributed with the Adept SDK.
+
+In order to build an application using the Adept SDK you must include
+the appropriate header files in your source code and instruct the linker
+to link against the appropriate shared libraries. Addtionally, you must
+tell the compiler where to search for the header files and tell the linker
+where to search for the shared libraries.
+
+Each of the example projects comes with two files that can be used to
+build an application from the provided source code. The file named 
+"Makefile" demonostrates how to write a makefile that can be used to build
+an application using GNU make. The file named "SConstruct" demonstrates how
+to write a SCONS script that can be used to build an application using
+SCONS. Depending on your system configuration, it may be necessary to make
+slight modifications to these files before they can be used.
+
+The sections below describe how to modify the Makefile and the SConstruct
+included with the DaciDemo project, located in "daci/DaciDemo", and how
+to build the project. Please note that although this information refers to
+a specific example it can be applied to any of the other demo projects.
+
+Building the DaciDemo project using GNU make:
+	The DaciDemo uses API functions provied by the DMGR and DACI
+	subsystems. The source code for the application includes "dmgr.h" and
+	"daci.h", which provide the prototypes for the DMGR and DACI
+	functions. The compiler must be provided with the path to the directory
+	containing these header files. This path is specified in the Makefile
+	using the variable "INC". If you installed the Adept SDK in the
+	standard location ("/usr/local/include/digilent/adept") then it's not
+	necessary to edit this variable. If you installed the SDK in a
+	different directory then you must edit the "INC" variable to contain
+	the path to the Adept include files.
+	
+	Since DaciDemo uses functions provided by the DMGR and DACI subsystems
+	it is necessary to instruct the linker to link against "libdaci.so" and
+	"libdmgr.so". The Makefile for DaciDemo does this by specifying 
+	"-ldmgr -ldaci" as part of the "CFLAGS" variable. If your application
+	uses functions provided by another subsystem, say DEPP, then you can
+	modify the Makefile to build your application by adding "-ldepp" to the
+	"CFLAGS" variable.
+	
+	In addition to telling the linker which libraries to link against, you
+	must also tell the linker path to the libraries. This path is specified
+	in the Makefile using the variable "LIBDIR". If you are running a
+	32-bit distribution and you installed the Adept Runtime in the standard
+	location ("/usr/local/lib/digilent/adept") then it's not necessary to
+	edit this variable. If you installed the Runtime libraries in a
+	different location then you must edit the "LIBDIR" variable to contain
+	the path to the Runtime libraries.
+	
+	After making any necessary modifications to the Makefile an application
+	can be built by typing "make" from within the DaciDemo project
+	directory. This will cause the compiler to generate an object file,
+	which is passed directly to the linker, which in turn creates an
+	executable with the name "DaciDemo". Please note that there is no
+	intermediate object file. Typing "vclean" within the DaciDemo directory
+	will remove the "DaciDemo" executable.
+
+Building the DaciDemo project using SCONS:
+	Building an application using SCONS is similar to building one using
+	GNU make. The compiler must be provided with a path to the
+	directory containing the header files provided by the Adept SDK.
+	This path is specified in the SConstruct using the "incpath" variable.
+	
+	The linker must be instructed to link against the appropriate shared
+	libraries, namely "libdmgr.so" and "libdaci.so". The libraries that are
+	linked against are specified using the "libs" variable. Please note
+	that you do not need to specify "lib" or ".so" when specifying a shared
+	library in the "libs" variable.
+	
+	The linker must also be told where it can find the shared libraries.
+	This path is specified in the SConstruct using the "libpath" variable.
+	If you are running a 32-bit distribution and you used the default
+	installation paths for both the Runtime and the SDK then modifying the
+	SConstruct is unnecessary. If you used a non-standard installation path
+	then you will need to modify the "incpath" and "libpath" variables
+	before using SCONS to build the application.
+	
+	To build the DaciDemo application using SCONS type "scons" from within
+	the DaciDemo project directory. This will cause an executable named
+	"DaciDemo" to be output. Type "scons -c" from within the same
+	directory to remove the executable and any intermediate files that were
+	generated by SCONS.
+
+
+Known Issues
+============
+
+Users may experience problems when using the Adept Runtime in a Linux
+Guest operating system with VMware Workstation. VMware Workstation does not
+pass USB SET_INTERFACE requests to Windows hosts. This can result in a
+failure of communication between the Linux kernel and the device. This
+issue typically only appears with older Linux kernel's that send 
+SET_INTERFACE requests to a USB device each time a process releases an
+interface. Linux Kernels 2.6.29 and newer do not appear to suffer from this
+problem. The following distributions are known to use kernels that suffer
+from this problem: CentOS 5, Red Hat Enterprise Linux 5, and Ubuntu 8.04.
+
+If you are using a different Linux distribution and you are unsure which
+kernel version your distribution is using then you can execute the command
+"uname -r" to determine the kernel version.
+
+If you are using VMware and are experience problems while communicating
+with Digilent's USB devices then you can try setting the following
+environment variable: "ADEPT_SETIFWAEN=1". Setting this environment
+variable enables a workaround for SET_INTERFACE requests. While this may
+allow you to successfully communicate with Digilent's USB devices when
+using Linux as a VMware guest it is not recommended as a permanent
+solution. A better solution is to upgrade to a newer Kernel and use Linux
+outside of VMware.
+
+Testing has shown that newer Linux kernels (2.6.29+) perform significantly
+better when communicating with USB devices. If you are using the Adept
+Runtime to interface with one of Digilent's USB devices and communication
+seems slow then try upgrading to a newer kernel.
+
+Red Hat Enterprise Linux 4 / CentOS 4 uses an older version of UDEV which
+does NOT create entries for USB devices in "/dev". Without these entries
+a UDEV permissions file can not be used to grant all users read and write
+access for all Digilent USB devices. As a result it is necessary to have
+superuser privileges when using the Adept Runtime with either of these
+distributions.
+
+
+Author
+======
+
+Digilent, Inc.
+support@digilentinc.com
+

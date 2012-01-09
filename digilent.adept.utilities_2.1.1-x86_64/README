@@ -1,0 +1,151 @@
+Description
+===========
+
+Adept Utilities is a set of command line applications that can be used in
+conjunction with the Adept Runtime to manage and communicate with
+Digilent's devices.
+
+Currently Adept Utilities consists of two applications: Digilent Adept
+Utility (dadutil) and Digilent JTAG Config Utility (djtgcfg). The Adept
+Utility provides a command line interface for discovering Digilent devices,
+querying device information, manipulating the device table, and setting
+device information. The JTAG Config Utility allows users to initialize,
+program, and erase FPGAs and CPLDs on Digilent boards using a command line
+interface.
+
+For more information please consult the associated man documentation.
+
+
+Supported Operating Systems
+===========================
+
+Adept Utilities has been built for the following distributions:
+
+CentOS 4 / Red Hat Enterprise Linux 4
+CentOs 5 / Red Hat Enterprise Linux 5
+openSUSE 11 / SUSE Linux Enterprise 11
+Ubuntu 8.04
+Ubuntu 9.10
+Ubuntu 10.04
+
+Please note that limited testing has been performed for each of these
+distributions. However, due to variances in system configurations Digilent
+can provide no guarantee that the applications provided by Adept Utilities
+will work on your system.
+
+
+Dependencies
+============
+
+Adept Utilities requires the Adept Runtime. The Adept Runtime is available
+for download at Digilent's website: http://www.digilentinc.com
+
+
+Installation
+============
+
+Before installing Adept Utilities you must agree to the End User License
+Agreement, which can be found in EULA.
+
+For basic installation execute the included bash shell script (install.sh)
+from a terminal with superuser privileges. This script installs all the
+necessary components for proper functionality and should be sufficient for
+most users.
+
+If for some reason the install script doesn't work on your system or if you
+would like to have more control over the installation process then read on.
+The following section describes each component of Adept Utilities and
+provides instructions on how the individual components may be installed.
+
+Binaries:
+	Adept Utilities consists of multiple binaries. For a 32-bit release
+	these binaries can be found in the "bin" directory. For a 64-bit
+	release they can be found in the "bin64" directory. The contents of the
+	applicable directory should be copied to a location that is appropriate
+	for the distribution that Adept Utilities is being installed on.
+	
+	Binaries can be installed anywhere on the system. However, if they are
+	not installed in a directory that is specified as part of a users PATH
+	then the user will need to provide the full path to the binary in order
+	to execute it.
+	
+	Common installation locations are "/usr/local/bin" and "/usr/bin".
+	
+	Let's assume that you are running a 32-bit distribution and want to
+	install the binaries provided with Adept Utilities in "/usr/local/bin".
+	The following commands, when executed with superuser privileges, will
+	copy the binaries to that location and set the appropriate permissions.
+	
+	cp -f bin/* /usr/local/bin
+	chmod 755 /usr/local/bin/dadutil
+	chmod 755 /usr/local/bin/djtgcfg
+
+MAN Documentation:
+	Adept Utilities contains MAN files for each of the applications it
+	provides. These files can be found in the "man" directory. Once
+	installed the documentation for a given application can be accessed
+	from a terminal using the command "man appname".
+	
+	MAN files should be installed in the appropriate section of one of the
+	directories shown by the "manpath" command. Common installation
+	locations are "/usr/local/man", "/usr/local/share/man", and 
+	"/usr/share/man".
+	
+	Let's assume that you want to install the MAN files included with Adept
+	Utilities in "/usr/local/man". The MAN file for the Digilent Adept
+	Utility is named "dadutil.1". The ".1" at the end of the filename
+	specifies the section that the documentation belongs to. The following
+	commands, when executed with superuser privileges, will copy the MAN
+	file to the appropriate location and set the appropriate permissions.
+	
+	cp -f man/dadutil.1 /usr/local/man/man1
+	chmod 644 /usr/local/man/man1/dadutil.1
+	
+	The rest of the MAN files can be installed in a similar fashion.
+
+
+Known Issues
+============
+
+Users may experience problems when using the Adept Runtime in a Linux
+Guest operating system with VMware Workstation. VMware Workstation does not
+pass USB SET_INTERFACE requests to Windows hosts. This can result in a
+failure of communication between the Linux kernel and the device. This
+issue typically only appears with older Linux kernel's that send 
+SET_INTERFACE requests to a USB device each time a process releases an
+interface. Linux Kernels 2.6.29 and newer do not appear to suffer from this
+problem. The following distributions are known to use kernels that suffer
+from this problem: CentOS 5, Red Hat Enterprise Linux 5, and Ubuntu 8.04.
+
+If you are using a different Linux distribution and you are unsure which
+kernel version your distribution is using then you can execute the command
+"uname -r" to determine the kernel version.
+
+If you are using VMware and are experience problems while communicating
+with Digilent's USB devices then you can try setting the following
+environment variable: "ADEPT_SETIFWAEN=1". Setting this environment
+variable enables a workaround for SET_INTERFACE requests. While this may
+allow you to successfully communicate with Digilent's USB devices when
+using Linux as a VMware guest it is not recommended as a permanent
+solution. A better solution is to upgrade to a newer Kernel and use Linux
+outside of VMware.
+
+Testing has shown that newer Linux kernels (2.6.29+) perform significantly
+better when communicating with USB devices. If you are using the Adept
+Runtime to interface with one of Digilent's USB devices and communication
+seems slow then try upgrading to a newer kernel.
+
+Red Hat Enterprise Linux 4 / CentOS 4 uses an older version of UDEV which
+does NOT create entries for USB devices in "/dev". Without these entries
+a UDEV permissions file can not be used to grant all users read and write
+access for all Digilent USB devices. As a result it is necessary to have
+superuser privileges when using the Adept Runtime with either of these
+distributions.
+
+
+Author
+======
+
+Digilent, Inc.
+support@digilentinc.com
+

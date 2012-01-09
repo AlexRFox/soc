@@ -1,0 +1,421 @@
+Description
+===========
+
+The Adept Runtime consists of the shared libraries, firmware images, and
+configuration files necessary to communicate with Digilent's devices.
+
+
+Supported Operating Systems
+===========================
+
+The Adept Runtime has been built for the following distributions:
+
+CentOS 4 / Red Hat Enterprise Linux 4
+CentOS 5 / Red Hat Enterprise Linux 5
+openSUSE 11 / SUSE Linux Enterprise 11
+Ubuntu 8.04
+Ubuntu 9.10
+Ubuntu 10.04
+
+Please note that limited testing has been performed for each of these
+distributions. However, due to variances in system configurations Digilent
+can provide no guarantee that the Adept Runtime will work on your system.
+
+
+Dependencies
+============
+
+The Adept Runtime uses libusb 1.0 to communicate with Digilent's USB
+devices. You must install libusb 1.0+ in order to use the Runtime. If your
+distribution doesn't provide a package for libusb 1.0 you can download the
+source from http://www.libusb.org/ and build it.
+
+If you download and build libusb from source it may be necessary to create
+a text file containing "/usr/local/lib", the default path for the libusb
+shared libraries, in "/etc/ld.so.conf.d/" and then execute "/sbin/ldconfig"
+to update the dynamic loader cache. This will ensure that the dynamic
+loader includes "/usr/local/lib" in its search for dependencies when
+loading applications and shared libraries.
+
+In addition to libusb 1.0 the Adept Runtime also requires FTDI's D2XX
+library, libftd2xx, to communicate with some of Digilent USB devices. A
+copy of the most recent version known to work with the Adept Runtime has
+been included in the "ftdi_drivers_x.y.z-platform" directory where "x.y.z"
+specifies the major, minor, and micro revision of the library and
+"platform" specifies 32 or 64 bit architecture. A seperate README file and
+install script have been provided in that directory to assist with
+installation of the library.
+
+
+Installation
+============
+
+Before installing the Adept Runtime you must agree to the End User License
+Agreement, which can be found in EULA.
+
+Please note that if you previously downloaded and installed version 2.3.9
+of the Runtime your system may contain the file 
+"/etc/ld.so.conf.d/digilent-adept.conf". If your system contains this file
+you need to manually remove it before installing a new version of the
+Runtime.
+
+For basic installation execute the included bash shell script (install.sh)
+from a terminal with superuser privileges. This script installs all the
+necessary components for proper functionality and should be sufficient for
+most users.
+
+If for some reason the install script doesn't work on your system or if you
+would like to have more control over the installation process then read on.
+The following section describes each component of the Runtime and provides
+instructions on how the individual components may be installed.
+
+Shared Libraries:
+	The Runtime consists of multiple shared libraries. For a 32-bit release
+	these libraries can be found in the "lib" directory. For a 64-bit
+	release they can be found in the "lib64" directory. The contents of the
+	applicable directory should be copied to a location that is appropriate
+	for the distribution that the Runtime is being installed on.
+	
+	If you are running a 32-bit distribution then locations that are likely
+	to be suitable are "/usr/local/lib/digilent/adept" and
+	"/usr/lib/digilent/adept". Suitable locations for a 64-bit distribution
+	are likely to be "/usr/local/lib64/digilent/adept" and
+	"/usr/lib64/digilent/adept".
+	
+	Let's assume that you are running a 32-bit distribution and want to
+	install the Runtime libraries in "/usr/local/lib/digilent/adept". The
+	following commands, when executed with superuser privileges, will copy
+	the files to that location and set the appropriate permissions.
+	
+	mkdir -p /usr/local/lib/digilent/adept
+	cp -fd lib/* /usr/local/lib/digilent/adept
+	chmod -R 755 /usr/local/lib/digilent/adept
+
+Dynamic Loader Configuration File (digilent-adept-libraries.conf):
+	In order for applications that use the Adept Runtime to execute the
+	dynamic loader must be able to find the shared libraries that the
+	Runtime consists of. The file "digilent-adept-libraries.conf" contains
+	the expected default installation path for both 32-bit and 64-bit
+	Runtime libraries. Edit this file to contain paths that are appropriate
+	for your installation. The following commands, when executed with
+	superuser privileges, will install the dynamic loader configuration
+	file in the appropriate location.
+	
+	cp -f digilent-adept-libraries.conf /etc/ld.so.conf.d
+	chmod 644 /etc/ld.so.conf.d/digilent-adept-libraries.conf
+	
+	Once the dynamic loader configuration file has been installed it is
+	necessary to have the dynamic loader update its cache. The following
+	command, when executed with superuser privileges, can be used to force
+	the cache to be updated.
+	
+	/sbin/ldconfig
+
+Firmware Images:
+	The Runtime contains firmware images that must be installed for the
+	Runtime to function correctly. These images can be found in the
+	"data/firmware" directory. The Runtime expects to find these images in
+	the Digilent data directory under a subdirectory named "firmware". A
+	configuration file that's placed in a known location is used to inform
+	the Runtime of the path to the Digilent data directory. The
+	configuration file is described in the section titled "Adept Runtime 
+	Configuration File".
+	
+	The Digilent data directory can be located anywhere on the system. A
+	location that is usually suitable for this directory is
+	"/usr/local/share/digilent/data". If you use this as your Digilent
+	data directory then the firmware images should be installed in
+	"/usr/local/share/digilent/data/firmware". The following commands,
+	when executed with superuser privileges, will copy the firmware images
+	to that location and set the appropriate permissions.
+	
+	mkdir -p /usr/local/share/digilent/data/firmware
+	cp -f data/firmware/*.HEX /usr/local/share/digilent/data/firmware
+	cp -f data/firmware/*.so /usr/local/share/digilent/data/firmware
+	chmod 644 /usr/local/share/digilent/data/firmware/*.HEX
+	chmod 755 /usr/local/share/digilent/data/firmware/*.so
+
+JTSC Device List (jtscdvclist.txt):
+	The JTSC device list is used by the Runtime to identify the FPGA's,
+	CPLD's, and FLASH ROM's found in a JTAG scan chain that is connected
+	to a Digilent device. The Runtime expects this file to be located in
+	the Digilent data directory and it will not function properly if the
+	file isn't found. The same directory that was chosen as the Digilent
+	data directory during the installation of the firmware images should
+	be used.
+	
+	The following commands assume that "/usr/local/share/digilent/data"
+	was chosen as the Digilent data directory and that this directory
+	already exists. These commands, when executed with superuser
+	privileges, will copy the JTSC device list to the Digilent data
+	directory and set the appropriate permissions.
+	
+	cp -f data/jtscdvclist.txt /usr/local/share/digilent/data
+	chmod 644 /usr/local/share/digilent/data/jtscdvclist.txt
+
+CoolRunner Support Files:
+	The CoolRunner support files are used by the Runtime to program
+	Xilinx CoolRunner CPLD's. These files can be found in the "data/xpla3"
+	directory. The Runtime expects to find these files in the Digilent
+	data directory under a subdirectory named "xpla3". The same directory
+	that was chosen as the Digilent data directory during the installation
+	of the firmware images should be used. Please note that installation
+	of these files is optional, as they are only required for programming
+	CoolRunner CPLD's.
+	
+	The following commands assume that "/usr/local/share/digilent/data"
+	was chosen as the Digilent data directory and that this directory
+	already exists. These commands, when executed with superuser
+	privileges, will copy the CoolRunner support files to the Digilent data
+	directory and set the appropriate permissions.
+	
+	mkdir -p /usr/local/share/digilent/data/xpla3
+	cp -f data/xpla3/*.map /usr/local/share/digilent/data/xpla3
+	chmod 644 /usr/local/share/digilent/data/xpla3/*.map
+
+CoolRunner 2 Support Files:
+	The CoolRunner 2 support files are used by the Runtime to program
+	Xilinx CoolRunner 2 CPLD's. These files can be found in the "data/xbr"
+	directory. The Runtime expects to find these files in the Digilent
+	data directory under a subdirectory named "xbr". The same directory
+	that was chosen as the Digilent data directory during the installation
+	of the firmware images should be used. Please note that installation
+	of these files is optional, as they are only required for programming
+	CoolRunner 2 CPLD's.
+	
+	The following commands assume that "/usr/local/share/digilent/data"
+	was chosen as the Digilent data directory and that this directory
+	already exists. These commands, when executed with superuser
+	privileges, will copy the CoolRunner 2 support files to the Digilent
+	data directory and set the appropriate permissions.
+	
+	mkdir -p /usr/local/share/digilent/data/xbr
+	cp -f data/xbr/*.map /usr/local/share/digilent/data/xbr
+	chmod 644 /usr/local/share/digilent/data/xbr/*.map
+	
+Adept Runtime Configuration File (digilent-adept.conf):
+	The Adept Runtime Configuration File uses key-value pairs of the form
+	"key=value" to specify configuration parameters for the
+	Runtime. The Runtime expects the path to the configuration file to be
+	"/etc/digilent-adept.conf" and will not function if the file isn't
+	found.
+		
+	Presently the only configuration parameter that can be specified is the
+	path to the Digilent data directory. This path is specified using the
+	key "DigilentDataPath". The file "digilent-adept.conf" specifies 
+	DigilentDataPath as "/usr/local/share/digilent/data". Edit the file so
+	that it contains a path that is appropriate for your installation.
+	
+	Please note that you may use white space before a key, between a
+	key and the equal sign, and between the equal sign and a value. This
+	white space will be trimmed when the key and value strings are parsed.
+	White space following the first character of the value string will not
+	be trimmed. For example, if you specify the Digilent data path as 
+	" DigilentDataPath =  /usr/local/share/digilent/data  " then the key
+	string parsed will be "DigilentDataPath" and the value string
+	parsed will be "/usr/local/share/digilent/data  ". You should only use
+	white space after the first character of the value if it's supposed to
+	be part of the value string. Quotation marks are not trimmed during
+	parsing and should not be used.
+	
+	The following commands, when executed with superuser privileges, will
+	copy the Adept Configuration file to the correct location and set
+	the appropriate permissions.
+	
+	cp -f digilent-adept.conf /etc/digilent-adept.conf
+	chmod 644 /etc/digilent-adept.conf
+
+System Binaries:
+	Digilent's USB devices are interfaced via libusb. When a USB device is
+	attached to the system any kernel drivers associated with the device's
+	Vendor ID and/or Product ID are loaded and attached to the interfaces
+	exported by the device. Applications that use libusb to communicate
+	with the interfaces of USB devices are unable to do so while any kernel
+	driver is attached to those interfaces. The Runtime contains a system
+	binary named "dftdrvdtch" which is executed each time a Digilent USB
+	Device is attached to the system. This application detaches any kernel
+	drivers that are attached to the interfaces of the device, ensuring
+	that the Runtime will be able to communicate with the device using
+	libusb.
+	
+	For a 32-bit release of the Runtime the "dftdrvdtch" application can be
+	found in the "bin" directory. For 64-bit releases the application can
+	be found in the "bin64" directory. The "dftdrvdtch" application is
+	considered a system binary and should be copied to a location that is
+	appropriate for the distribution that the Runtime is being installed
+	on. Suitable locations for system binaries are typically
+	"/usr/local/sbin","/usr/sbin", and "/sbin". However, the application
+	may be located anywhere within the file system.
+	
+	The following commands assume that you are running a 32-bit
+	distribution and that you want to place the "dftdrvdtch" application in
+	"/usr/local/sbin".
+	
+	mkdir -p /usr/local/sbin
+	cp -f bin/dftdrvdtch /usr/local/sbin
+	chmod 755 /usr/local/sbin/dftdrvdtch
+	
+	The path used to install the application should be noted as it is
+	required when editing the USB UDEV Rules file or the USB Hotplug
+	Script. The aforementioned files are descbied in the sections titled
+	"UDEV USB Rules" and "USB Hotplug Script".
+
+USB Device Permissions:
+	Digilent's USB devices are interfaced via libusb. In order for the
+	Adept Runtime to access these devices the process executing the Runtime
+	libraries must have read and write permission. The permissions
+	associated with a USB device are the same as the permissions associated
+	with that device's entry in the file system.
+	
+	Distributions using kernel version 2.6.13 or newer typically use UDEV
+	to manage dynamic hardware configuration and to create file system
+	entries for the devices that are attached to the system. The following
+	command can be used to determine which version of the kernel your
+	distribution is running.
+	
+	uname -r
+	
+	If the kernel version returned by the above command is greater than or
+	equal then 2.6.13 then it's likely that your distribution uses UDEV. To
+	further confirm whether or not your distribution uses UDEV you can run
+	the following command to determine the number of UDEVD processes
+	running, which should be greater than or equal to 1.
+	
+	ps -e | grep -i -c udevd
+	
+	If the kernel version returned by "uname -r" is less than 2.6.13 or the
+	number of UDEVD processes is 0 then it is likely that your system uses
+	Hotplug instead of UDEV to manage dynamic hardware configuration and to
+	create file system entries. If your system uses Hotplug then 
+	"/proc/sys/kernel/hotplug" will contain the path to main Hotplug
+	script, which is typically "/sbin/hotplug". If
+	"/proc/sys/kernel/hotplug" doesn't exist, is an empty file, or contains
+	"/dev/null" then your system doesn't use Hotplug to manage dynamic
+	hardware configuration.
+	
+	Support for the Adept Runtime is only provided for distributions that
+	use UDEV or Hotplug to manage dynamic device configuration. For
+	distributions using UDEV see the section titled "UDEV USB Rules" for
+	information on how to configure your system to create USB device
+	entries for which all users are granted read and write permission. For
+	distributions running Hotplug see the section titled
+	"USB Hotplug Script".
+
+UDEV USB Rules (52-digilent-usb.rules):
+	Distributions using UDEV to manage dynamic hardware configuration
+	typically create file system entries for USB devices in
+	"/dev/bus/usb/xyz" where "xyz" is the bus number associated with an
+	attached device. The UDEV USB rules file ensures that the entries
+	created by UDEV grant read and write permissions to all users for all
+	Digilent USB Devices.
+	
+	In addition to setting permissions, the UDEV USB Rules file also
+	executes the "dftdrvdtch" application, described in the
+	"System Binaries" section, when a Digilent USB device is attached to
+	the system. The UDEV USB Rules file expects to find "dftdrvdtch" in
+	"/usr/local/sbin". If "dftdrvdtch" was installed in a different
+	directory then the rules file must be updated with the correct path for
+	the application prior to installation. For most distributions the rules
+	file can simply be copied to "/etc/udev/rules.d/52-digilent-usb.rules"
+	without further modification.
+	
+	If you are running Red Hat 5 Enterprise Linux or CentOS 5 the rules
+	file requires further modification before installation. Use a text
+	editor to add the following lines to the bottom of the rules file:
+	
+	SUBSYSTEM=="usb_endpoint", ACTION=="add", OPTIONS="ignore_device"
+	SUBSYSTEM=="usb_endpoint", ACTION=="remove", OPTIONS="ignore_device"
+	
+	The following commands, when executed with superuser privileges, can
+	be used to install the rules file and set the appropriate permissions.
+	
+	cp -f 52-digilent-usb.rules /etc/udev/rules.d
+	chmod 644 /etc/udev/rules.d/52-digilent-usb.rules
+	
+	Once the UDEV USB rules have been installed it is necessary to have
+	UDEV reload the rules it is using or reboot your system. One of the
+	following commands, when executed with superuser privileges, should
+	cause UDEV to reload its rules.
+	
+	/sbin/udevcontrol reload_rules
+	/sbin/udevadm control --reload-rules
+	
+	Please note that if you had any Digilent USB devices attached prior to
+	executing the above commands then it will be necessary to disconnect
+	them and then reconnect them to the system.
+
+USB Hotplug Script (digilentusb):
+	Distributions using Hotplug to manage dynamic hardware configuration
+	typically create file system entries for USB devices in 
+	"/proc/bus/usb/xyz" where "xyz" is the bus number associated with an
+	attached device. The USB Hotplug Script ensures that entries created by
+	Hotplug grant read and write permissions to all users for all Digilent
+	USB Devices.
+	
+	In addition to setting permissions, the USB Hotplug Script also
+	executes the "dftdrvdtch" application, described in the
+	"System Binaries" section, when a Digilent USB device is attached to
+	the system. The USB Hotplug Script expects the path for the application
+	to be "/usr/local/sbin/dftdrvdtch". If "dftdrvdtch" was installed in a
+	different directory then the script must be updated with the correct
+	path for the application prior to installation. To update the path open
+	"digilentusb" in a text editor, find the line containing 
+	"szFTDTCH='/usr/local/sbin/dftdrvdtch'" and replace
+	'/usr/local/sbin/dfdftdrvdtch' with '/your/path/here/dfdftdrvdtch'.
+	
+	The following commands, when executed with superuser privileges, can
+	be used to install the Hotplug Script and set the appropriate
+	permissions.
+	
+	mkdir -p /etc/hotplug/usb
+	cp -f digilentusb /etc/hotplug/usb
+	chmod 755 /etc/hotplug/usb/digilentusb
+	
+	Once the Hotplug Script is installed the Hotplug USB usermap must be
+	modified to call the Hotplug Script when Digilent device's are attached
+	to the system. The following commands, when executed with superuser
+	privileges, can be used to make the approrpiate additions to the
+	usermap.
+	
+	echo "# Digilent USB Devices" >> "/etc/hotplug/usb.usermap"
+	echo "digilentusb          0x0001      0x1443   0x0000    0x0000       0x0000      0x00         0x00            0x00            0x00            0x00               0x00               0x00000000" >> "/etc/hotplug/usb.usermap"
+	echo "digilentusb          0x0001      0x0403   0x0000    0x0000       0x0000      0x00         0x00            0x00            0x00            0x00               0x00               0x00000000" >> "/etc/hotplug/usb.usermap"
+
+
+Known Issues
+============
+
+Users may experience problems when using the Adept Runtime in a Linux
+Guest operating system with VMware Workstation. VMware Workstation does not
+pass USB SET_INTERFACE requests to Windows hosts. This can result in a
+failure of communication between the Linux kernel and the device. This
+issue typically only appears with older Linux kernel's that send 
+SET_INTERFACE requests to a USB device each time a process releases an
+interface. Linux Kernels 2.6.29 and newer do not appear to suffer from this
+problem. The following distributions are known to use kernels that suffer
+from this problem: CentOS 5, Red Hat Enterprise Linux 5, and Ubuntu 8.04.
+
+If you are using a different Linux distribution and you are unsure which
+kernel version your distribution is using then you can execute the command
+"uname -r" to determine the kernel version.
+
+If you are using VMware and experience problems while communicating with
+Digilent's USB devices then you can try setting the following environment
+variable: "ADEPT_SETIFWAEN=1". Setting this environment variable enables a
+workaround for SET_INTERFACE requests. While this may allow you to
+successfully communicate with Digilent's USB devices when using Linux as a
+VMware guest it is not recommended as a permanent solution. A better
+solution is to upgrade to a newer Kernel and use Linux outside of VMware.
+
+Testing has shown that newer Linux kernels (2.6.29+) perform significantly
+better when communicating with USB devices. If you are using the Adept
+Runtime to interface with one of Digilent's USB devices and communication
+seems slow then try upgrading to a newer kernel.
+
+
+Author
+======
+
+Digilent, Inc.
+support@digilentinc.com
+

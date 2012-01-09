@@ -1,0 +1,133 @@
+.TH DADUTIL 1 08-05-2010
+
+.SH NAME
+
+.B dadutil
+- Digilent Adept Utility
+
+.SH SYNOPSIS
+
+.B dadutil
+[--help] [--version]
+.I command
+[options]
+
+.SH DESCRIPTION
+
+.B dadutil
+provides a command line interface for discovering Digilent devices, querying device information, manipulating the device table, and setting device information.
+
+
+.SH COMMANDS
+
+.TP 10
+.B enum
+Enumerate the device table and discover any connected Digilent devices. This command prints out a list of Digilent devices. The list includes both devices in the device table and devices that were discovered. The product name, user name, and serial number are displayed for all devices that are currently connected to the system. If a device is in the device table, then its alias is also displayed.
+
+The "-t" option can be used with this command in order to enumerate the device table. If the device table is enumerated, then the entries in the device table will be displayed. These entries include the following information: alias, connection string, and device transport type.
+
+.TP 10
+.B setsn
+Set a device's serial number. The "-d" option must be used to specify the user name or alias of the device whose serial number you wish to set. The "--sn" option must be used to specify the serial number that you wish to set for the device.
+
+This command can be used to restore the serial number of a device to its factory default. The serial number of a device consists of three portions. The first portion is always "210". The second portion is the 3-digit number following the "502-" number found in the device's reference manual. The third portion is the 6-digit number following the "D" on the device's serial number sticker. Together these numbers form the 12-digit serial number programmed into the device at the factory. For example, the serial number of an IO Explorer with serial number sticker "D123456" is "210174123456".
+
+.TP 10
+.B setusr
+Set a device's user name. The "-d" option must be used to specify the user name or alias of the device whose user name you wish to set. The "--usr" option must be used to specify the user name that you wish to set for the device. After you change a device's user name it can no longer be accessed with its old user name.
+
+.TP 10
+.B showinfo
+Display information about a specific device. This command displays a device's product name, user name, serial number, product ID, firmware version, transport type, and capabilities. The "-d" option must be used to specify the user name or alias of the device whose information you want to display.
+
+.TP 10
+.B tbladd
+Create a device table entry. The device table is used to store aliases that can be used to access a specific device. The device table is stored on a per user basis. Device table entries consist of an alias, a connection string, and a device transport type. Use the "--alias" option to specify the alias for the device, the "--conn" option to specify the connection string for the device, and the "--dtp" option to specify the device's transport type.
+
+.TP 10
+.B tblrem
+Remove an entry from the device table. Use the "--alias" option to specify the device table entry to be removed.
+
+
+.SH OPTIONS
+
+.TP 10
+.B --alias
+Specify an alias string for a device when creating or removing an entry from the device table. Alias strings may contain up to 16 alpha-numeric characters.
+
+.TP 10
+.B --conn
+Specify the connection string used for a device when creating an entry in the device table. The connection string for a device depends on its transport type. For USB devices, the connection string is the device's serial number with "SN:" prepended.
+
+.TP 10
+.B -d
+Specify the user name or alias of the device you wish to communicate with.
+
+.TP 10
+.B --dtp
+Specify the transport type for a device when creating an entry in the device table. Use the "showinfo" command to determine the transport type of a particular device that's connected to the system.
+
+.TP 10
+.B --sn
+Specify the serial number used when setting a device's serial number with the "setsn" command. A serial number specified with this option must consist of 12 hexadecimal digits.
+
+.TP 10
+.B -t
+Enumerate the device table. When this option is used in conjunction with the "enum" command, the alias, connection string, and device transport type for each entry in the device table will be displayed.
+
+.TP 10
+.B --usr
+Specify the user name string used when setting a device's user name with the "setusr" command. User name strings may contain up to 16 alpha-numeric characters.
+
+.TP 10
+.B -?, --help
+.br
+Display typical application usage, a list of supported commands, and a list of supported options.
+
+.TP 10
+.B -v, --version
+.br
+Display information about the program version.
+
+
+.SH EXAMPLES
+
+.TP 10
+.B $ dadutil enum
+.br
+Enumerate all devices in the device table and all devices connected to the system.
+
+.TP 10
+.B $ dadutil enum -t
+.br
+Display all device table entries.
+
+.TP 10
+.B $ dadutil setsn -d ioexp --sn 210174123456
+.br
+Set the serial number of the device to "210174123456".
+
+.TP 10
+.B $ dadutil setusr -d Basys2 --usr Basys2-100
+.br
+Set the user name of the device from "Basys2" to "Basys2-100".
+
+.TP 10
+.B $ dadutil showinfo -d Basys2
+.br
+Display information about the device whose alias or user name is "Basys2".
+
+.TP 10
+.B $ dadutil tbladd --alias jusb --conn SN:500031234567 --dtp USB
+.br
+Create an entry in the device table with an alias of "jusb" for a USB device with a connection string of "SN:500031234567".
+
+.TP 10
+.B $ dadutil tblrem --alias jusb
+.br
+Remove the entry with alias "jusb" from the device table.
+
+
+.SH AUTHOR
+
+Digilent, Inc. <support@digilentinc.com>

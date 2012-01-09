@@ -1,0 +1,110 @@
+Description
+===========
+
+The Adept Software Development Kit (SDK) consists of the include (header)
+files used to expose the application programming interfaces (APIs) of the
+Adept System. Through combined use of the Adept Runtime and the Adept SDK
+users can develop custom applications that communicate with Digilent's
+devices.
+
+
+Supported Operating Systems
+===========================
+
+The Adept SDK is supported by the same distributions as the Adept Runtime.
+Please see the README file provided with the Adept Runtime for a list of
+supported distributions.
+
+
+Dependencies
+============
+
+The Adept SDK requires the Adept Runtime to be installed. The latest
+version of the Adept Runtime may be obtained from Digilent's website:
+
+http://www.digilentinc.com
+
+
+Installation
+============
+
+Before installing or using the Adept SDK you must agree to the End User
+License Agreement, which can be found in EULA.
+
+The Adept SDK provides include (header) files which define the API
+functions, data types, and constants used by the Adept System. Developers
+who want to write applications that communicate with Digilent's devices
+via the Adept System need to include these headers in their applications.
+Header files are typically placed in "/usr/local/include" and 
+"/usr/include". However, they may be placed anywhere on the system as long
+as the compiler is provided with the path to the headers.
+
+A bash shell script has been provided for basic installation. This script
+simply copies the header files to a user specified installation location
+and sets the appropriate file permissions. If no path is specified then
+the header files are installed using the default path
+"/usr/local/include/digilent/adept". Please note that the build scripts
+and make files included with the sample applications have been written to
+look for the headers provided by the Adept SDK in the default location. If
+you choose not to install the header files or to use a different location
+then it will be necessary to modify the build scripts in order to
+successfully compile the sample applications.
+
+
+Usage
+=====
+
+Documentation that describes how to use the Adept SDK to access the Adept
+System has been provided in the "doc" directory. This documentation
+provides a detailed description of APIs exposed by the header files and
+shared libraries that make up the system.
+
+A number of example applications have been included in the "samples"
+directory. Please see the associated README file for more information.
+
+
+Known Issues
+============
+
+Users may experience problems when using the Adept Runtime in a Linux
+Guest operating system with VMware Workstation. VMware Workstation does not
+pass USB SET_INTERFACE requests to Windows hosts. This can result in a
+failure of communication between the Linux kernel and the device. This
+issue typically only appears with older Linux kernel's that send 
+SET_INTERFACE requests to a USB device each time a process releases an
+interface. Linux Kernels 2.6.29 and newer do not appear to suffer from this
+problem. The following distributions are known to use kernels that suffer
+from this problem: CentOS 5, Red Hat Enterprise Linux 5, and Ubuntu 8.04.
+
+If you are using a different Linux distribution and you are unsure which
+kernel version your distribution is using then you can execute the command
+"uname -r" to determine the kernel version.
+
+If you are using VMware and are experience problems while communicating
+with Digilent's USB devices then you can try setting the following
+environment variable: "ADEPT_SETIFWAEN=1". Setting this environment
+variable enables a workaround for SET_INTERFACE requests. While this may
+allow you to successfully communicate with Digilent's USB devices when
+using Linux as a VMware guest it is not recommended as a permanent
+solution. A better solution is to upgrade to a newer Kernel and use Linux
+outside of VMware.
+
+Testing has shown that newer Linux kernels (2.6.29+) perform significantly
+better when communicating with USB devices. If you are using the Adept
+Runtime to interface with one of Digilent's USB devices and communication
+seems slow then try upgrading to a newer kernel.
+
+Red Hat Enterprise Linux 4 / CentOS 4 uses an older version of UDEV which
+does NOT create entries for USB devices in "/dev". Without these entries
+a UDEV permissions file can not be used to grant all users read and write
+access for all Digilent USB devices. As a result it is necessary to have
+superuser privileges when using the Adept Runtime with either of these
+distributions.
+
+
+Author
+======
+
+Digilent, Inc.
+support@digilentinc.com
+

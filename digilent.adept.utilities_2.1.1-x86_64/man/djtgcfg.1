@@ -1,0 +1,110 @@
+.TH DJTGCFG 1 06-16-2010
+
+.SH NAME
+
+.B djtgcfg
+- Digilent JTAG Config Utility
+
+    
+.SH SYNOPSIS
+
+.B djtgcfg
+[--help] [--version]
+.I command
+[options]
+
+
+.SH DESCRIPTION
+
+.B djtgcfg
+allows users to initialize, program, and erase FPGAs and CPLDs on Digilent boards using a command line interface. 
+	
+
+.SH COMMANDS
+
+.TP 10
+.B enum
+Enumerate the device table and discover any connected Digilent devices. This command prints out a list of Digilent devices. The list includes both devices in the device table and devices that were discovered. The product name, user name, and serial number are displayed for all devices that are currently connected to the system. If a device is in the device table, then its alias is also displayed.
+
+.TP 10
+.B init
+Initialize the JTAG scan chain and list all target devices. The "-d" option must be used to specify the user name or alias of the device whose scan chain you wish to initialize. 
+
+.TP 10
+.B prog
+Program the target board, with the specified device index, using the file specified. The "-d" option must be used to specify the user name or alias of the device you wish to use for programming. The "-i" or "--index" option must be used to specify the index of the device in the JTAG scan chain that you wish to program. The "-f" or "--file" option must be used to specify the pathname of the file used for programming.
+
+.TP 10
+.B erase
+Erase the specified device's configuration. The "-d" option must be used to specify the user name or alias of the device you wish to use for erasing. The "-i" or "--index" option must be used to specify the index of the device in the JTAG scan chain that you wish to erase.
+
+.TP 10
+.B loop
+Loop the IDCODE of a device in a JTAG scan chain, with the specified device index, for the specified number of iterations. Use the "-d" option to specify the device whose JTAG scan chain you wish to access, the "-i" or "--index" option to specify the scan chain index of the device whose IDCODE you wish to loop, and the "-c" or "--count" option to specify the number of iterations used for looping.
+
+
+.SH OPTIONS
+
+.TP 10
+.B -c, --count
+Specify the number of iterations to loop an IDCODE.
+
+.TP 10
+.B -d
+Specify the user name or alias of the device you wish to communicate with.
+
+.TP 10
+.B -f, --file
+Specify the name of the file used to program (configure) the target device.
+
+.TP 10
+.B -i, --index
+Specify the index of a device in the JTAG scan chain that you wish to program, erase, or loop. The indexes of available devices can be listed using the 
+.I init
+command.
+
+.TP 10
+.B -?, --help
+.br
+Display typical application usage, a list of supported commands, and a list of supported options.
+
+.TP 10
+.B -v, --version
+.br
+Display information about the program version.
+
+.TP 10
+.B --verbose
+Display more detailed error messages.
+
+        
+.SH EXAMPLES
+
+.TP 10
+.B $ djtgcfg enum
+.br
+Enumerate all devices in the device table and all devices connected to the system.
+
+.TP 10
+.B $ djtgcfg init -d Basys2
+.br
+Display target devces in the JTAG scan chain of a connected Basys2 board.
+
+.TP 10
+.B $ djtgcfg prog -d Basys2 --index 0 --file config.bit
+.br
+Program the JTAG device at index 0, on the connected Basys2 board, with the configuration from the config.bit file.
+
+.TP 10
+.B $ djtgcfg erase -d Basys2 --index 1
+.br
+Erase the JTAG device at index 1 on the connected Basys2 board.
+
+.TP 10
+.B $ djtgcfg loop -d Basys2 --index 1 --count 1000
+Loop the IDCODE of the JTAG device at index 1 of a connected Basys2 board 1000 times.
+
+
+.SH AUTHOR
+
+Digilent, Inc. <support@digilentinc.com>
